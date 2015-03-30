@@ -161,6 +161,13 @@ def HYPERLINK(t,s) :
         pass
     return(('<a target="_blank" href="{t}">{s}</a>'.format(**locals())),s)
 
+
+def do_test(d) :
+    failed=d["abonnent_id"] in ("sss@gmx.info","ilona.buchholz@pressebuero-fromme.de","anna.gentrup@pressebuero-fromme.de")
+    failed=failed or (d["besteller_id"] in ("sss@gmx.info",))
+    failed=failed or (d["abonnent_id"].find("@mailinator.com") > -1)
+    return failed
+
 def do_map(d) :
     dd={}
     for (k,v) in d.items() :
@@ -174,6 +181,8 @@ def do_map(d) :
             dd[s]=d[k]
     dd["abonnent_id"]=dd["abonnent_id"].lower()
     dd["htmldate"]=datetime.datetime.strptime(dd["datum"],"%Y-%m-%d %H:%M:%S").strftime('<span class="datum" title="%Y-%m-%d %H:%M:%S">%Y-%m-%d</span>')
+    if do_test(dd) :
+        dd=None
     return dd
 
 
@@ -181,7 +190,9 @@ def read_data() :
     reader=csv.DictReader(input_stream,delimiter=";")
     ks=[] 
     for row in reader :
-        ks.append(do_map(row))
+        r=do_map(row)
+        if r:
+            ks.append(r)
     return ks
 
 def read_reference(filename,index=lambda a: a["fieldname"]) :
